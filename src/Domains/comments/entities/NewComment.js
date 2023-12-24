@@ -5,7 +5,7 @@ class NewComment {
     const { threadId, content, owner } = payload;
 
     this.threadId = threadId;
-    this.content = 'content';
+    this.content = content;
     this.owner = owner;
   }
 
