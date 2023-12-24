@@ -1,40 +1,50 @@
+const NewThread = require('../../../Domains/threads/entities/NewThread');
 const AddedThread = require('../../../Domains/threads/entities/AddedThread');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const AddThreadUseCase = require('../AddThreadUseCase');
 
 describe('AddThreadUseCase', () => {
-  it('should orchestrating the add thread action correctly', async () => {
-    const mockThreadRepo = new ThreadRepository();
+  it(
+    'it should orchestrate the adding thread action correctly',
+    async () => {
+      // Arrange
+      const useCasePayload = {
+        title: 'sebuah judul',
+        body: 'sebuah body',
+        owner: 'user-123',
+      };
 
-    const mockReturnAddedThread = new AddedThread({
-      id: 'thread-123',
-      title: 'title',
-      user: 'user-123',
-    });
+      const expectedAddedThread = new AddedThread({
+        id: 'thread-123',
+        title: 'sebuah judul',
+        owner: 'user-123',
+      });
 
-    mockThreadRepo.addThread = jest.fn(() => Promise.resolve(mockReturnAddedThread));
+      /** creating dependency of use case */
+      const mockThreadRepository = new ThreadRepository();
 
-    const useCase = new AddThreadUseCase({
-      threadRepository: mockThreadRepo,
-    });
+      /** mocking needed function */
+      mockThreadRepository.addThread = jest.fn()
+        .mockImplementation(
+          () => Promise.resolve(expectedAddedThread),
+        );
 
-    const useCasePayload = {
-      title: 'title',
-      body: 'body',
-      owner: 'user-123',
-    };
+      /** creating use case instance */
+      const getThreadUseCase = new AddThreadUseCase({
+        threadRepository: mockThreadRepository,
+      });
 
-    const expectedAddedThread = new AddedThread({
-      id: 'thread-123',
-      title: 'title',
-      user: 'user-123',
-    });
+      // Action
+      const addedThread = await getThreadUseCase.execute(useCasePayload);
 
-    // Action
-    const addedThread = await useCase.execute(useCasePayload);
-
-    // Assesrt
-    expect(addedThread).toEqual(expectedAddedThread);
-    expect(mockThreadRepo.addThread).toBeCalledWith(useCasePayload);
-  });
+      // Assert
+      expect(addedThread).toStrictEqual(expectedAddedThread);
+      expect(mockThreadRepository.addThread)
+        .toBeCalledWith(new NewThread({
+          title: 'sebuah judul',
+          body: 'sebuah body',
+          owner: 'user-123',
+        }));
+    },
+  );
 });
